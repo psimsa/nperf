@@ -133,12 +133,15 @@ class Build : NukeBuild
                 .SetProject(tmpProjectPath)
                 .SetConfiguration(Configuration)
                 .SetNoRestore(InvokedTargets.Contains(Restore))
-                .SetOutput(ArtifactsDirectory / "app")
+                .SetOutput(ArtifactsDirectory / "app" / platform)
                 .SetRuntime(platform)
                 .SetFramework("net7.0")
                 .SetProcessArgumentConfigurator(a => a
                     .Add("-p:PublishAot=true")
                     .Add("-p:StripSymbols=true")
+                    .Add("-p:InvariantGlobalization=true")
+                    .Add("-p:DebuggerSupport=false")
+                    .Add("-p:EventSourceSupport=false")
                 )
             );
 
