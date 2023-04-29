@@ -99,16 +99,29 @@ class Build : NukeBuild
     Target PublishBinary => _ => _
         .DependsOn(Compile)
         .DependsOn(Clean)
-        .OnlyWhenStatic(() => GitHubActions.Instance != null)
+        // .OnlyWhenStatic(() => GitHubActions.Instance != null)
         .Produces(ArtifactsDirectory / "nperf")
         .Executes(() =>
         {
+            var platform = Environment.OSVersion.Platform switch
+            {
+                PlatformID.Unix => "linux-x64",
+                PlatformID.MacOSX => "osx-x64",
+                PlatformID.Win32NT => "win-x64",
+                _ => throw new NotSupportedException()
+            };
+
+            var project = Solution.src.nperf.GetMSBuildProject();
+            project.RemoveGlobalProperty("TargetFrameworks");
+            project.SetGlobalProperty("TargetFramework", "net7.0");
+
             DotNetPublish(s => s
                 .SetProject(Solution.src.nperf)
                 .SetConfiguration(Configuration)
                 .SetNoRestore(InvokedTargets.Contains(Restore))
                 .SetOutput(ArtifactsDirectory)
-                .SetRuntime("linux-x64")
+                .SetRuntime(platform)
+                .SetFramework("net7.0")
                 .SetProcessArgumentConfigurator(a => a
                     .Add("-p:PublishAot=true")
                     .Add("-p:StripSymbols=true")
@@ -119,6 +132,7 @@ class Build : NukeBuild
     Target Pack => _ => _
         .DependsOn(Compile)
         .DependsOn(Clean)
+        .Before(PublishBinary)
         .Produces(ArtifactsDirectory / "*.nupkg")
         .Executes(() =>
         {
