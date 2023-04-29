@@ -45,5 +45,5 @@ jobs:
           path: artifacts/nuget
       - uses: actions/upload-artifact@v3
         with:
-          name: bin
-          path: artifacts/bin
+          name: app
+          path: artifacts/app

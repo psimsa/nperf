@@ -76,6 +76,8 @@ class Build : NukeBuild
 
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
 
+    bool IsOnLinux => Environment.OSVersion.Platform == PlatformID.Unix;
+
     Target Clean => _ => _
         .Before(Restore)
         .Executes(() =>
@@ -105,13 +107,13 @@ class Build : NukeBuild
         .DependsOn(Compile)
         .DependsOn(Clean)
         // .OnlyWhenStatic(() => GitHubActions.Instance != null)
-        .Produces(ArtifactsDirectory / "bin")
+        .Produces(ArtifactsDirectory / "app")
         .Executes(() =>
         {
             var platform = Environment.OSVersion.Platform switch
             {
                 PlatformID.Unix => "linux-x64",
-                PlatformID.MacOSX => "osx-x64",
+                // PlatformID.MacOSX => "osx-x64",
                 PlatformID.Win32NT => "win-x64",
                 _ => throw new NotSupportedException()
             };
@@ -131,7 +133,7 @@ class Build : NukeBuild
                 .SetProject(tmpProjectPath)
                 .SetConfiguration(Configuration)
                 .SetNoRestore(InvokedTargets.Contains(Restore))
-                .SetOutput(ArtifactsDirectory / "bin")
+                .SetOutput(ArtifactsDirectory / "app")
                 .SetRuntime(platform)
                 .SetFramework("net7.0")
                 .SetProcessArgumentConfigurator(a => a
@@ -183,6 +185,7 @@ class Build : NukeBuild
     Target PublishToGitHubNuget => _ => _
         .DependsOn(Pack)
         .Consumes(Pack)
+        .OnlyWhenStatic(() => IsOnLinux)
         .Executes(() =>
         {
             DotNetNuGetPush(_ => _
@@ -195,6 +198,7 @@ class Build : NukeBuild
     Target Publish => _ => _
         .DependsOn(Pack)
         .Consumes(Pack)
+        .OnlyWhenStatic(() => IsOnLinux)
         .Requires(() => NuGetApiKey)
         .Executes(() =>
         {
