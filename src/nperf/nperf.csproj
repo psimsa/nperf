@@ -5,7 +5,23 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Title>nperf</Title>
+    <Authors>psimsa</Authors>
+    <Description>Simple network performance testing tool</Description>
+    <PackageProjectUrl>https://github.com/psimsa/nperf</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/psimsa/nperf</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackAsTool>True</PackAsTool>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageId>dotnet-nperf</PackageId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />

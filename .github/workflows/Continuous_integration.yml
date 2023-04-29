@@ -9,20 +9,14 @@
 #
 #     - To trigger manual generation invoke:
 #
-#         nuke --generate-configuration GitHubActions_Build_main --host GitHubActions
+#         nuke --generate-configuration GitHubActions_Continuous_integration --host GitHubActions
 #
 # </auto-generated>
 # ------------------------------------------------------------------------------
 
-name: Build_main
+name: Continuous_integration
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+on: [push]
 
 jobs:
   ubuntu-latest:
@@ -37,11 +31,15 @@ jobs:
             .nuke/temp
             ~/.nuget/packages
           key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj') }}
-      - name: Run './build.cmd Clean Compile Publish'
-        run: ./build.cmd Clean Compile Publish
+      - name: Run './build.cmd Clean Compile PublishBinary Pack'
+        run: ./build.cmd Clean Compile PublishBinary Pack
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v3
         with:
           name: nperf
           path: artifacts/nperf
+      - uses: actions/upload-artifact@v3
+        with:
+          name: artifacts
+          path: artifacts
