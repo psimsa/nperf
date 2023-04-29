@@ -9,20 +9,14 @@
 #
 #     - To trigger manual generation invoke:
 #
-#         nuke --generate-configuration GitHubActions_Build_main --host GitHubActions
+#         nuke --generate-configuration GitHubActions_Manual_publish_to_Github_Nuget --host GitHubActions
 #
 # </auto-generated>
 # ------------------------------------------------------------------------------
 
-name: Build_main
+name: Manual_publish_to_Github_Nuget
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+on: [workflow_dispatch]
 
 jobs:
   ubuntu-latest:
@@ -37,7 +31,11 @@ jobs:
             .nuke/temp
             ~/.nuget/packages
           key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj') }}
-      - name: Run './build.cmd Clean Compile'
-        run: ./build.cmd Clean Compile
+      - name: Run './build.cmd Pack PublishToGitHubNuget'
+        run: ./build.cmd Pack PublishToGitHubNuget
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: nuget
+          path: artifacts/nuget
