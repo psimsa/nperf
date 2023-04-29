@@ -32,7 +32,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     EnableGitHubToken = true)]
 [GitHubActions(
     "Build main and publish to nuget",
-    GitHubActionsImage.UbuntuLatest,
+    GitHubActionsImage.UbuntuLatest, GitHubActionsImage.WindowsLatest,
     OnPushBranches = new[] { "main" },
     InvokedTargets = new[]
     {
