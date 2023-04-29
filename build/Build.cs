@@ -22,7 +22,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 [GitHubActions(
     "Continuous integration",
     GitHubActionsImage.UbuntuLatest,
-    On = new [] { GitHubActionsTrigger.Push },
+    OnPushBranchesIgnore = new[] { "main" },
     InvokedTargets = new[]
     {
         nameof(Clean), nameof(Compile), nameof(PublishBinary), nameof(Pack)
