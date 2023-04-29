@@ -37,7 +37,11 @@ jobs:
             .nuke/temp
             ~/.nuget/packages
           key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj') }}
-      - name: Run './build.cmd Clean Compile'
-        run: ./build.cmd Clean Compile
+      - name: Run './build.cmd Clean Compile Publish'
+        run: ./build.cmd Clean Compile Publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: nperf
+          path: artifacts/nperf
