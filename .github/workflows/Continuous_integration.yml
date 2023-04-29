@@ -40,9 +40,33 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v3
         with:
-          name: nperf
-          path: artifacts/nperf
+          name: bin
+          path: artifacts/bin
       - uses: actions/upload-artifact@v3
         with:
-          name: artifacts
-          path: artifacts
+          name: nuget
+          path: artifacts/nuget
+  windows-latest:
+    name: windows-latest
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Cache .nuke/temp, ~/.nuget/packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            .nuke/temp
+            ~/.nuget/packages
+          key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj') }}
+      - name: Run './build.cmd Clean Compile PublishBinary Pack'
+        run: ./build.cmd Clean Compile PublishBinary Pack
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: bin
+          path: artifacts/bin
+      - uses: actions/upload-artifact@v3
+        with:
+          name: nuget
+          path: artifacts/nuget

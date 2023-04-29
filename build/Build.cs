@@ -1,7 +1,9 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Security.Policy;
 using JetBrains.Annotations;
+using Microsoft.Build.Evaluation;
 using NuGet.Versioning;
 using Nuke.Common;
 using Nuke.Common.CI;
@@ -21,7 +23,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 [GitHubActions(
     "Continuous integration",
-    GitHubActionsImage.UbuntuLatest,
+    GitHubActionsImage.UbuntuLatest, GitHubActionsImage.WindowsLatest,
     OnPushBranchesIgnore = new[] { "main" },
     InvokedTargets = new[]
     {
@@ -33,7 +35,10 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     GitHubActionsImage.UbuntuLatest,
     OnPushBranches = new[] { "main" },
     InvokedTargets = new[]
-        { nameof(Clean), nameof(Compile), nameof(Pack), nameof(PublishToGitHubNuget), nameof(Publish), nameof(PublishBinary) },
+    {
+        nameof(Clean), nameof(Compile), nameof(Pack), nameof(PublishToGitHubNuget), nameof(Publish),
+        nameof(PublishBinary)
+    },
     ImportSecrets = new[] { nameof(NuGetApiKey) },
     EnableGitHubToken = true)]
 [GitHubActions(
@@ -57,7 +62,7 @@ class Build : NukeBuild
 
     [Solution(GenerateProjects = true)] readonly Solution Solution;
 
-    [Parameter][Secret] readonly string NuGetApiKey;
+    [Parameter] [Secret] readonly string NuGetApiKey;
 
     GitHubActions GitHubActions => GitHubActions.Instance;
 
@@ -100,7 +105,7 @@ class Build : NukeBuild
         .DependsOn(Compile)
         .DependsOn(Clean)
         // .OnlyWhenStatic(() => GitHubActions.Instance != null)
-        .Produces(ArtifactsDirectory / "nperf")
+        .Produces(ArtifactsDirectory / "bin")
         .Executes(() =>
         {
             var platform = Environment.OSVersion.Platform switch
@@ -110,16 +115,23 @@ class Build : NukeBuild
                 PlatformID.Win32NT => "win-x64",
                 _ => throw new NotSupportedException()
             };
+            var project = Solution.src.nperf;
+            var tmpProjectPath = project.Directory / "tmp.csproj";
 
-            var project = Solution.src.nperf.GetMSBuildProject();
-            project.RemoveGlobalProperty("TargetFrameworks");
-            project.SetGlobalProperty("TargetFramework", "net7.0");
+            var msbuildProject = project.GetMSBuildProject();
+            var property = msbuildProject.GetProperty("TargetFrameworks");
+            if (property != null)
+                msbuildProject.RemoveProperty(property);
+
+            msbuildProject.SetProperty("TargetFramework", "net7.0");
+
+            msbuildProject.Save(tmpProjectPath);
 
             DotNetPublish(s => s
-                .SetProject(Solution.src.nperf)
+                .SetProject(tmpProjectPath)
                 .SetConfiguration(Configuration)
                 .SetNoRestore(InvokedTargets.Contains(Restore))
-                .SetOutput(ArtifactsDirectory)
+                .SetOutput(ArtifactsDirectory / "bin")
                 .SetRuntime(platform)
                 .SetFramework("net7.0")
                 .SetProcessArgumentConfigurator(a => a
@@ -127,13 +139,15 @@ class Build : NukeBuild
                     .Add("-p:StripSymbols=true")
                 )
             );
+
+            File.Delete(tmpProjectPath);
         });
 
     Target Pack => _ => _
         .DependsOn(Compile)
         .DependsOn(Clean)
         .Before(PublishBinary)
-        .Produces(ArtifactsDirectory / "*.nupkg")
+        .Produces(ArtifactsDirectory / "nuget")
         .Executes(() =>
         {
             var currentVersion = DotnetNperfVersion ?? new NuGetVersion(0, 0, 0);
@@ -157,7 +171,7 @@ class Build : NukeBuild
 
             DotNetPack(_ => _
                 .SetConfiguration(Configuration)
-                .SetOutputDirectory(ArtifactsDirectory)
+                .SetOutputDirectory(ArtifactsDirectory / "nuget")
                 .SetNoBuild(true)
                 .SetNoRestore(true)
                 .SetVersion(newVersion.ToString())
@@ -172,7 +186,7 @@ class Build : NukeBuild
         .Executes(() =>
         {
             DotNetNuGetPush(_ => _
-                .SetTargetPath(ArtifactsDirectory / "*.nupkg")
+                .SetTargetPath(ArtifactsDirectory / "nuget" / "*.nupkg")
                 .SetSource("https://nuget.pkg.github.com/psimsa/index.json")
                 .SetApiKey(GitHubActions.Token)
             );
@@ -185,7 +199,7 @@ class Build : NukeBuild
         .Executes(() =>
         {
             DotNetNuGetPush(_ => _
-                .SetTargetPath(ArtifactsDirectory / "*.nupkg")
+                .SetTargetPath(ArtifactsDirectory / "nuget" / "*.nupkg")
                 .SetSource("https://api.nuget.org/v3/index.json")
                 .SetApiKey(NuGetApiKey)
             );
