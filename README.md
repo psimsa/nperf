@@ -1,14 +1,19 @@
 # nperf
-Super simple network performance tester tool
+Super simple network performance tester tool. Available as linux binary or a dotnet tool
+
+## Installation (dotnet tool)
+```
+$ dotnet tool install -g dotnet-nperf
+```
 
 ## Usage
 ```
-$ ./nperf server
+nperf -s [-a <listen_address>] [-p <listen_port>]
 ```
 starts a server listening on port 5000. You can also redirect the output to `/dev/null` to avoid the output to the console.
 
 ```
-$ ./nperf client <server_ip> <server_port>
+nperf -a <server_ip> [-p <server_port>]
 ```
 
 Starts a client that connects to the server and sends three batches of data to the server:
