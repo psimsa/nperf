@@ -128,12 +128,13 @@ class Build : NukeBuild
             msbuildProject.SetProperty("TargetFramework", "net7.0");
 
             msbuildProject.Save(tmpProjectPath);
+            var outputPath = ArtifactsDirectory / platform;
 
             DotNetPublish(s => s
                 .SetProject(tmpProjectPath)
                 .SetConfiguration(Configuration)
                 .SetNoRestore(InvokedTargets.Contains(Restore))
-                .SetOutput(ArtifactsDirectory / "app" / platform)
+                .SetOutput(outputPath )
                 .SetRuntime(platform)
                 .SetFramework("net7.0")
                 .SetProcessArgumentConfigurator(a => a
@@ -142,10 +143,11 @@ class Build : NukeBuild
                     .Add("-p:InvariantGlobalization=true")
                     .Add("-p:DebuggerSupport=false")
                     .Add("-p:EventSourceSupport=false")
-                )
-            );
+                ));
 
             File.Delete(tmpProjectPath);
+            Directory.EnumerateFiles(outputPath, "*.dbg").ForEach(File.Delete);
+            Directory.EnumerateFiles(outputPath, "*.pdb").ForEach(File.Delete);
         });
 
     Target Pack => _ => _
