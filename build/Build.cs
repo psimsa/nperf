@@ -128,7 +128,7 @@ class Build : NukeBuild
             msbuildProject.SetProperty("TargetFramework", "net7.0");
 
             msbuildProject.Save(tmpProjectPath);
-            var outputPath = ArtifactsDirectory / platform;
+            var outputPath = ArtifactsDirectory / "app" / platform;
 
             DotNetPublish(s => s
                 .SetProject(tmpProjectPath)
