@@ -7,7 +7,6 @@ namespace nperf;
 public class ClientMode
 {
     private readonly AppSettings _appSettings;
-    // private TcpClient _client;
 
     public ClientMode(AppSettings appSettings)
     {
@@ -16,7 +15,7 @@ public class ClientMode
 
     public async Task<TcpClient> ConnectToServerAsync()
     {
-        var client = new TcpClient(){ NoDelay = true };
+        var client = new TcpClient() { NoDelay = true };
         await client.ConnectAsync(IPAddress.Parse(_appSettings.IpAddress), _appSettings.Port);
         return client;
     }
@@ -47,17 +46,20 @@ public class ClientMode
         var networkStream = _client.GetStream();
 
         _client.SendBufferSize = 0;
-        
+
         var stopwatch = new Stopwatch();
         stopwatch.Start();
-        
+
         for (int i = 0; i < iterations; i++)
         {
             random.NextBytes(buffer);
             await networkStream.WriteAsync(buffer, 0, buffer.Length);
             await networkStream.FlushAsync();
+            if (_appSettings.LogVerbose)
+                Console.WriteLine(
+                    $"Thread {Thread.CurrentThread.ManagedThreadId} sent {buffer.Length} bytes (Total: {dataSize * (i + 1)})");
         }
-        
+
         stopwatch.Stop();
         return (dataSize * iterations, stopwatch.ElapsedMilliseconds);
     }
