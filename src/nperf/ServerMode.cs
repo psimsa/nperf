@@ -42,7 +42,8 @@ public class ServerMode
             while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) != 0)
             {
                 totalBytesReceived += bytesRead;
-                Console.WriteLine($"Thread {Thread.CurrentThread.ManagedThreadId} received {bytesRead} bytes (Total: {totalBytesReceived})");
+                if(_appSettings.LogVerbose) 
+                    Console.WriteLine($"Thread {Thread.CurrentThread.ManagedThreadId} received {bytesRead} bytes (Total: {totalBytesReceived})");
             }
         }
         catch (Exception ex)
