@@ -31,9 +31,10 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     },
     EnableGitHubToken = true)]
 [GitHubActions(
-    "Build main and publish to nuget", 
+    "Build main and publish to nuget (manual)", 
     GitHubActionsImage.UbuntuLatest, GitHubActionsImage.WindowsLatest,
-    OnPushBranches = new[] { "main" },
+        // OnPushBranches = new[] { "main" },
+    On = new[] { GitHubActionsTrigger.WorkflowDispatch },
     InvokedTargets = new[]
     {
         nameof(PublishToGitHubNuget), nameof(PublishToNuget), nameof(PublishBinary)
