@@ -27,22 +27,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Cache .nuke/temp, ~/.nuget/packages
+      - name: 'Cache: .nuke/temp, ~/.nuget/packages'
         uses: actions/cache@v3
         with:
           path: |
             .nuke/temp
             ~/.nuget/packages
-          key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj') }}
-      - name: Run './build.cmd Clean Compile PublishBinary Pack'
+          key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj', '**/Directory.Packages.props') }}
+      - name: 'Run: Clean, Compile, PublishBinary, Pack'
         run: ./build.cmd Clean Compile PublishBinary Pack
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/upload-artifact@v3
+      - name: 'Publish: app'
+        uses: actions/upload-artifact@v3
         with:
           name: app
           path: artifacts/app
-      - uses: actions/upload-artifact@v3
+      - name: 'Publish: nuget'
+        uses: actions/upload-artifact@v3
         with:
           name: nuget
           path: artifacts/nuget
@@ -51,22 +53,24 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Cache .nuke/temp, ~/.nuget/packages
+      - name: 'Cache: .nuke/temp, ~/.nuget/packages'
         uses: actions/cache@v3
         with:
           path: |
             .nuke/temp
             ~/.nuget/packages
-          key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj') }}
-      - name: Run './build.cmd Clean Compile PublishBinary Pack'
+          key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj', '**/Directory.Packages.props') }}
+      - name: 'Run: Clean, Compile, PublishBinary, Pack'
         run: ./build.cmd Clean Compile PublishBinary Pack
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/upload-artifact@v3
+      - name: 'Publish: app'
+        uses: actions/upload-artifact@v3
         with:
           name: app
           path: artifacts/app
-      - uses: actions/upload-artifact@v3
+      - name: 'Publish: nuget'
+        uses: actions/upload-artifact@v3
         with:
           name: nuget
           path: artifacts/nuget

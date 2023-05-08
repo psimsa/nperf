@@ -27,23 +27,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Cache .nuke/temp, ~/.nuget/packages
+      - name: 'Cache: .nuke/temp, ~/.nuget/packages'
         uses: actions/cache@v3
         with:
           path: |
             .nuke/temp
             ~/.nuget/packages
-          key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj') }}
-      - name: Run './build.cmd Clean Compile Pack PublishToGitHubNuget Publish PublishBinary'
+          key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj', '**/Directory.Packages.props') }}
+      - name: 'Run: Clean, Compile, Pack, PublishToGitHubNuget, Publish, PublishBinary'
         run: ./build.cmd Clean Compile Pack PublishToGitHubNuget Publish PublishBinary
         env:
           NuGetApiKey: ${{ secrets.NUGET_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/upload-artifact@v3
+      - name: 'Publish: nuget'
+        uses: actions/upload-artifact@v3
         with:
           name: nuget
           path: artifacts/nuget
-      - uses: actions/upload-artifact@v3
+      - name: 'Publish: app'
+        uses: actions/upload-artifact@v3
         with:
           name: app
           path: artifacts/app
@@ -52,23 +54,25 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Cache .nuke/temp, ~/.nuget/packages
+      - name: 'Cache: .nuke/temp, ~/.nuget/packages'
         uses: actions/cache@v3
         with:
           path: |
             .nuke/temp
             ~/.nuget/packages
-          key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj') }}
-      - name: Run './build.cmd Clean Compile Pack PublishToGitHubNuget Publish PublishBinary'
+          key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj', '**/Directory.Packages.props') }}
+      - name: 'Run: Clean, Compile, Pack, PublishToGitHubNuget, Publish, PublishBinary'
         run: ./build.cmd Clean Compile Pack PublishToGitHubNuget Publish PublishBinary
         env:
           NuGetApiKey: ${{ secrets.NUGET_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/upload-artifact@v3
+      - name: 'Publish: nuget'
+        uses: actions/upload-artifact@v3
         with:
           name: nuget
           path: artifacts/nuget
-      - uses: actions/upload-artifact@v3
+      - name: 'Publish: app'
+        uses: actions/upload-artifact@v3
         with:
           name: app
           path: artifacts/app

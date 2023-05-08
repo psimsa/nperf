@@ -24,14 +24,14 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 [GitHubActions(
     "Continuous integration",
     GitHubActionsImage.UbuntuLatest, GitHubActionsImage.WindowsLatest,
-    OnPushBranchesIgnore = new[] { "main" },
+    OnPushBranchesIgnore = new[] { "main" },   
     InvokedTargets = new[]
     {
         nameof(Clean), nameof(Compile), nameof(PublishBinary), nameof(Pack)
     },
     EnableGitHubToken = true)]
 [GitHubActions(
-    "Build main and publish to nuget",
+    "Build main and publish to nuget", 
     GitHubActionsImage.UbuntuLatest, GitHubActionsImage.WindowsLatest,
     OnPushBranches = new[] { "main" },
     InvokedTargets = new[]
@@ -82,7 +82,7 @@ class Build : NukeBuild
         .Before(Restore)
         .Executes(() =>
         {
-            EnsureCleanDirectory(ArtifactsDirectory);
+            ArtifactsDirectory.CreateOrCleanDirectory();
         });
 
     Target Restore => _ => _
