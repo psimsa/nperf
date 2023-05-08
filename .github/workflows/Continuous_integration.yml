@@ -34,8 +34,8 @@ jobs:
             .nuke/temp
             ~/.nuget/packages
           key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj', '**/Directory.Packages.props') }}
-      - name: 'Run: Clean, Compile, PublishBinary, Pack'
-        run: ./build.cmd Clean Compile PublishBinary Pack
+      - name: 'Run: PublishBinary, Pack'
+        run: ./build.cmd PublishBinary Pack
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: 'Publish: app'
@@ -60,8 +60,8 @@ jobs:
             .nuke/temp
             ~/.nuget/packages
           key: ${{ runner.os }}-${{ hashFiles('**/global.json', '**/*.csproj', '**/Directory.Packages.props') }}
-      - name: 'Run: Clean, Compile, PublishBinary, Pack'
-        run: ./build.cmd Clean Compile PublishBinary Pack
+      - name: 'Run: PublishBinary, Pack'
+        run: ./build.cmd PublishBinary Pack
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: 'Publish: app'

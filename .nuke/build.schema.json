@@ -79,9 +79,9 @@
               "Clean",
               "Compile",
               "Pack",
-              "Publish",
               "PublishBinary",
               "PublishToGitHubNuget",
+              "PublishToNuget",
               "Restore"
             ]
           }
@@ -99,9 +99,9 @@
               "Clean",
               "Compile",
               "Pack",
-              "Publish",
               "PublishBinary",
               "PublishToGitHubNuget",
+              "PublishToNuget",
               "Restore"
             ]
           }

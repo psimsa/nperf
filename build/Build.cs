@@ -27,7 +27,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     OnPushBranchesIgnore = new[] { "main" },   
     InvokedTargets = new[]
     {
-        nameof(Clean), nameof(Compile), nameof(PublishBinary), nameof(Pack)
+        nameof(PublishBinary), nameof(Pack)
     },
     EnableGitHubToken = true)]
 [GitHubActions(
@@ -36,8 +36,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     OnPushBranches = new[] { "main" },
     InvokedTargets = new[]
     {
-        nameof(Clean), nameof(Compile), nameof(Pack), nameof(PublishToGitHubNuget), nameof(Publish),
-        nameof(PublishBinary)
+        nameof(PublishToGitHubNuget), nameof(PublishToNuget), nameof(PublishBinary)
     },
     ImportSecrets = new[] { nameof(NuGetApiKey) },
     EnableGitHubToken = true)]
@@ -45,7 +44,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     "Manual publish to Github Nuget",
     GitHubActionsImage.UbuntuLatest,
     On = new[] { GitHubActionsTrigger.WorkflowDispatch },
-    InvokedTargets = new[] { nameof(Pack), nameof(PublishToGitHubNuget) },
+    InvokedTargets = new[] { nameof(PublishToGitHubNuget) },
     EnableGitHubToken = true
 )]
 class Build : NukeBuild
@@ -198,7 +197,7 @@ class Build : NukeBuild
             );
         });
 
-    Target Publish => _ => _
+    Target PublishToNuget => _ => _
         .DependsOn(Pack)
         .Consumes(Pack)
         .OnlyWhenStatic(() => IsOnLinux)
