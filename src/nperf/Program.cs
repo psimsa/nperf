@@ -19,12 +19,17 @@ var bufferSize = new Option<int>(
     new[] { "--buffer-size", "-b" },
     () => 1024 * 1024 * 10,
     "The buffer size to use for sending and receiving data");
+var logVerbose = new Option<bool>(
+       new[] { "--verbose", "-v" },
+          "Enable verbose logging");
+
 var rootCommand = new RootCommand("A network bandwidth testing tool")
 {
     serverOption,
     addressOption,
     portOption,
     bufferSize,
+    logVerbose
 };
 
 rootCommand.AddValidator(validate =>
@@ -38,7 +43,7 @@ rootCommand.AddValidator(validate =>
 });
 
 // Configure command line option handling
-rootCommand.SetHandler(Run, serverOption, addressOption, portOption, bufferSize);
+rootCommand.SetHandler(Run, serverOption, addressOption, portOption, bufferSize, logVerbose);
 
 // Parse and execute the command line arguments
 await new CommandLineBuilder(rootCommand)
@@ -46,9 +51,9 @@ await new CommandLineBuilder(rootCommand)
     .Build()
     .InvokeAsync(args);
 
-static async Task Run(bool server, string address, int port, int bufferSize)
+static async Task Run(bool server, string address, int port, int bufferSize, bool logVerbose)
 {
-    var appSettings = new AppSettings(bufferSize, address ?? "0.0.0.0", port);
+    var appSettings = new AppSettings(bufferSize, address ?? "0.0.0.0", port, logVerbose);
 
     if (server)
     {
@@ -87,25 +92,18 @@ static void PrintBandwidth(string label, long dataSize, long duration)
     double dataSizeInBits = dataSize * 8.0;
     double bandwidth = dataSizeInBits / durationInSeconds; // bps
 
-    string unit;
-    if (bandwidth > 1e9)
-    {
-        bandwidth /= 1e9;
-        unit = "Gbps";
-    }
-    else if (bandwidth > 1e6)
-    {
-        bandwidth /= 1e6;
-        unit = "Mbps";
-    }
-    else
-    {
-        bandwidth /= 1e3;
-        unit = "Kbps";
-    }
+    int unitIndex = 0;
+    var units = new[] { "bps", "Kbps", "Mbps", "Gbps" };
+    var unitsBytes = new[] { "Bps", "KBps", "MBps", "GBps" };
 
-    Console.WriteLine($"{label}: {bandwidth:F2} {unit}");
+    while (bandwidth >= 1024 && unitIndex < units.Length - 1)
+    {
+        bandwidth /= 1024;
+        ++unitIndex;
+    }      
+
+    Console.WriteLine($"{label}: {bandwidth:F2} {units[unitIndex]} / {(bandwidth/8):F2} {unitsBytes[unitIndex]}");
 }
 
 public record AppSettings(int BufferSize = 1024 * 1024 * 10, string IpAddress = "0.0.0.0", int Port = 5000,
-    bool IsServerMode = false);
+    bool LogVerbose = false);
