@@ -24,20 +24,20 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 [GitHubActions(
     "Continuous integration",
     GitHubActionsImage.UbuntuLatest, GitHubActionsImage.WindowsLatest,
-    OnPushBranchesIgnore = new[] { "main" },
+    OnPushBranchesIgnore = new[] { "main" },   
     InvokedTargets = new[]
     {
-        nameof(Clean), nameof(Compile), nameof(PublishBinary), nameof(Pack)
+        nameof(PublishBinary), nameof(Pack)
     },
     EnableGitHubToken = true)]
 [GitHubActions(
-    "Build main and publish to nuget",
+    "Build main and publish to nuget (manual)", 
     GitHubActionsImage.UbuntuLatest, GitHubActionsImage.WindowsLatest,
-    OnPushBranches = new[] { "main" },
+        // OnPushBranches = new[] { "main" },
+    On = new[] { GitHubActionsTrigger.WorkflowDispatch },
     InvokedTargets = new[]
     {
-        nameof(Clean), nameof(Compile), nameof(Pack), nameof(PublishToGitHubNuget), nameof(Publish),
-        nameof(PublishBinary)
+        nameof(PublishToGitHubNuget), nameof(PublishToNuget), nameof(PublishBinary)
     },
     ImportSecrets = new[] { nameof(NuGetApiKey) },
     EnableGitHubToken = true)]
@@ -45,7 +45,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     "Manual publish to Github Nuget",
     GitHubActionsImage.UbuntuLatest,
     On = new[] { GitHubActionsTrigger.WorkflowDispatch },
-    InvokedTargets = new[] { nameof(Pack), nameof(PublishToGitHubNuget) },
+    InvokedTargets = new[] { nameof(PublishToGitHubNuget) },
     EnableGitHubToken = true
 )]
 class Build : NukeBuild
@@ -82,7 +82,7 @@ class Build : NukeBuild
         .Before(Restore)
         .Executes(() =>
         {
-            EnsureCleanDirectory(ArtifactsDirectory);
+            ArtifactsDirectory.CreateOrCleanDirectory();
         });
 
     Target Restore => _ => _
@@ -128,12 +128,13 @@ class Build : NukeBuild
             msbuildProject.SetProperty("TargetFramework", "net7.0");
 
             msbuildProject.Save(tmpProjectPath);
+            var outputPath = ArtifactsDirectory / "app" / platform;
 
             DotNetPublish(s => s
                 .SetProject(tmpProjectPath)
                 .SetConfiguration(Configuration)
                 .SetNoRestore(InvokedTargets.Contains(Restore))
-                .SetOutput(ArtifactsDirectory / "app" / platform)
+                .SetOutput(outputPath )
                 .SetRuntime(platform)
                 .SetFramework("net7.0")
                 .SetProcessArgumentConfigurator(a => a
@@ -142,10 +143,11 @@ class Build : NukeBuild
                     .Add("-p:InvariantGlobalization=true")
                     .Add("-p:DebuggerSupport=false")
                     .Add("-p:EventSourceSupport=false")
-                )
-            );
+                ));
 
             File.Delete(tmpProjectPath);
+            Directory.EnumerateFiles(outputPath, "*.dbg").ForEach(File.Delete);
+            Directory.EnumerateFiles(outputPath, "*.pdb").ForEach(File.Delete);
         });
 
     Target Pack => _ => _
@@ -198,7 +200,7 @@ class Build : NukeBuild
             );
         });
 
-    Target Publish => _ => _
+    Target PublishToNuget => _ => _
         .DependsOn(Pack)
         .Consumes(Pack)
         .OnlyWhenStatic(() => IsOnLinux)

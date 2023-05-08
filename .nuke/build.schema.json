@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Build Schema",
   "$ref": "#/definitions/build",
+  "title": "Build Schema",
   "definitions": {
     "build": {
       "type": "object",
@@ -79,9 +79,9 @@
               "Clean",
               "Compile",
               "Pack",
-              "Publish",
               "PublishBinary",
               "PublishToGitHubNuget",
+              "PublishToNuget",
               "Restore"
             ]
           }
@@ -99,9 +99,9 @@
               "Clean",
               "Compile",
               "Pack",
-              "Publish",
               "PublishBinary",
               "PublishToGitHubNuget",
+              "PublishToNuget",
               "Restore"
             ]
           }
