@@ -27,7 +27,7 @@ jobs:
       - name: Pack NuGet
         run: dotnet pack src/nperf/nperf.csproj --configuration Release --output artifacts/nuget --no-build --no-restore
       - name: Upload App Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: app
           path: artifacts/app
