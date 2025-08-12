@@ -34,7 +34,7 @@ jobs:
           name: app
           path: artifacts/app
       - name: Upload NuGet Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: nuget
           path: artifacts/nuget

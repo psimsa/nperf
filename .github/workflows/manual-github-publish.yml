@@ -22,7 +22,7 @@ jobs:
       - name: Pack NuGet
         run: dotnet pack src/nperf/nperf.csproj --configuration Release --output artifacts/nuget --no-build --no-restore
       - name: Upload NuGet Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: nuget
           path: artifacts/nuget
