@@ -8,7 +8,7 @@ jobs:
     name: Build and Pack
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Restore
         run: dotnet restore solution.sln
       - name: Build
