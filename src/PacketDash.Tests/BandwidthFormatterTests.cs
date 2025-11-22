@@ -1,7 +1,7 @@
 using Xunit;
-using nperf;
+using PacketDash;
 
-namespace nperf.tests;
+namespace PacketDash.Tests;
 
 public class BandwidthFormatterTests
 {

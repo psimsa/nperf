@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\nperf\nperf.csproj" />
+    <ProjectReference Include="..\PacketDash\PacketDash.csproj" />
   </ItemGroup>
 
 </Project>

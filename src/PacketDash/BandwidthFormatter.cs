@@ -1,4 +1,4 @@
-namespace nperf;
+namespace PacketDash;
 
 public static class BandwidthFormatter
 {

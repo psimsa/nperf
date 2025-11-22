@@ -26,6 +26,6 @@ jobs:
             - name: "/keys/nuget"
               output-name: "NUGET_API_KEY"
       - name: Create NuGet package
-        run: dotnet pack -c Release -o ./artifacts -p:Version=${GITHUB_REF#refs/tags/v}
+        run: dotnet pack PacketDash.sln -c Release -o ./artifacts -p:Version=${GITHUB_REF#refs/tags/v}
       - name: Publish package to nuget.org
         run: dotnet nuget push ./artifacts/*.nupkg -k ${{ steps.fetch-secrets.outputs.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
