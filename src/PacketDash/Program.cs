@@ -87,9 +87,3 @@ static async Task Run(bool server, string address, int port, int bufferSize, boo
         Console.WriteLine($"Small data test: {BandwidthFormatter.Format(smallDataResult.dataSize, smallDataResult.duration)}");
     }
 }
-
-public record AppSettings(int BufferSize = 1024 * 1024 * 10, string IpAddress = AppSettings.DefaultIpAddress, int Port = 5000,
-    bool LogVerbose = false)
-{
-    public const string DefaultIpAddress = "0.0.0.0";
-}

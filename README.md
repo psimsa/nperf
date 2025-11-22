@@ -1,48 +1,64 @@
+# PacketDash
 
-# nperf
-Super simple network performance tester tool. Available as linux binary or a dotnet tool
+**PacketDash** is a high-performance, simple network bandwidth testing tool. It is available as a Linux binary or a .NET tool.
+
+## Key Features
+- **High Performance**: Optimized socket handling and zero-copy buffering for maximum throughput.
+- **Reliable**: Robust connection handling and error reporting.
+- **Simple**: Easy-to-use command-line interface.
+- **Cross-Platform**: Runs on Windows, Linux, and macOS via .NET 8.
 
 ## Installation (dotnet tool)
-```
-$ dotnet tool install -g dotnet-nperf
+```bash
+$ dotnet tool install -g PacketDash
 ```
 
 ## Usage
-For help:
-```
-$ nperf --help
-```
----
-#### Basic usage is as such:
 
-On first computer, start a server:
-```
-nperf -s [-a <listen_address>] [-p <listen_port>]
-```
-By default starts a server listening on all interfaces and port 5000 (you can override address and port).
+### Basic Usage
 
-On second computer, start a client that does the testing:
+**1. Start the Server**
+On the first machine, start the server:
+```bash
+pdash -s [-a <listen_address>] [-p <listen_port>]
 ```
-nperf -a <server_ip> [-p <server_port>]
+*   By default, it listens on `0.0.0.0` (all interfaces) and port `5000`.
+
+**2. Start the Client**
+On the second machine, connect to the server:
+```bash
+pdash -a <server_ip> [-p <server_port>]
 ```
 
-Starts a client that connects to the server and sends three batches of data to the server:
-- 100MB in 1 iteration
-- 2MB in 10 iterations
-- 50KB in 500 iterations
+### What it does
+The client connects to the server and sends three batches of data to measure throughput:
+1.  **Large Data**: 100MB in 1 iteration (measures sustained throughput).
+2.  **Medium Data**: 2MB in 10 iterations (measures bursty throughput).
+3.  **Small Data**: 50KB in 500 iterations (measures transaction overhead).
 
-At the end, the clients statistics as such:
-```
-Summary:
+### Example Output
+```text
 Running large data test...
-Large data test completed in 8920 ms with 104857600 bytes sent
+Large data test completed in 34 ms with 104857600 bytes sent
 Running medium data test...
-Medium data test completed in 1822 ms with 20971520 bytes sent
+Medium data test completed in 16 ms with 20971520 bytes sent
 Running small data test...
-Small data test completed in 3448 ms with 25600000 bytes sent
+Small data test completed in 19 ms with 25600000 bytes sent
 
 Summary:
-Large data test: 89,69 Mbps / 11,21 MBps
-Medium data test: 87,82 Mbps / 10,98 MBps
-Small data test: 56,65 Mbps / 7,08 MBps
+Large data test: 22.98 Gbps / 2.87 GBps
+Medium data test: 10.42 Gbps / 1.30 GBps
+Small data test: 11.92 Gbps / 1.49 GBps
+```
+
+## Development
+
+### Build
+```bash
+dotnet build PacketDash.sln
+```
+
+### Test
+```bash
+dotnet test PacketDash.sln
 ```
