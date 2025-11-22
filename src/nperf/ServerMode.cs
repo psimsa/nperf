@@ -33,13 +33,17 @@ public class ServerMode
     {
         long totalBytesReceived = 0;
         var buffer = ArrayPool<byte>.Shared.Rent(_appSettings.BufferSize);
-        var stream = client.GetStream();
+        // Disable kernel buffer for potential zero-copy benefits
+        client.ReceiveBufferSize = 0;
+        var socket = client.Client;
+        string? remoteEndPoint = socket.RemoteEndPoint?.ToString();
 
         try
         {
             int bytesRead;
 
-            while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) != 0)
+            // Use Socket.ReceiveAsync directly instead of NetworkStream
+            while ((bytesRead = await socket.ReceiveAsync(buffer, SocketFlags.None)) != 0)
             {
                 totalBytesReceived += bytesRead;
                 if(_appSettings.LogVerbose) 
@@ -54,7 +58,7 @@ public class ServerMode
         {
             ArrayPool<byte>.Shared.Return(buffer);
             client.Dispose();
-            Console.WriteLine($"Client disconnected from {client.Client.RemoteEndPoint} (Total received: {totalBytesReceived} bytes)");
+            Console.WriteLine($"Client disconnected from {remoteEndPoint} (Total received: {totalBytesReceived} bytes)");
         }
     }
 }

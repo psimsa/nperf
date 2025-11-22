@@ -43,7 +43,9 @@ public class ClientMode
     {
         var random = new Random();
         var buffer = new byte[dataSize];
-        var networkStream = _client.GetStream();
+        random.NextBytes(buffer); // Pre-generate data
+        
+        var socket = _client.Client;
 
         _client.SendBufferSize = 0;
 
@@ -52,9 +54,10 @@ public class ClientMode
 
         for (int i = 0; i < iterations; i++)
         {
-            random.NextBytes(buffer);
-            await networkStream.WriteAsync(buffer, 0, buffer.Length);
-            await networkStream.FlushAsync();
+            // Send the same buffer repeatedly using Socket directly
+            await socket.SendAsync(buffer, SocketFlags.None);
+            // No FlushAsync needed for Socket
+            
             if (_appSettings.LogVerbose)
                 Console.WriteLine(
                     $"Thread {Thread.CurrentThread.ManagedThreadId} sent {buffer.Length} bytes (Total: {dataSize * (i + 1)})");
