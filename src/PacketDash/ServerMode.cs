@@ -13,19 +13,32 @@ public class ServerMode
         _appSettings = appSettings;
     }
 
-    public async Task StartServerAsync()
+    public async Task StartServerAsync(CancellationToken cancellationToken = default)
     {
         var listener = new TcpListener(IPAddress.Parse(_appSettings.IpAddress), _appSettings.Port);
         listener.Start();
 
         Console.WriteLine($"Server listening on {_appSettings.IpAddress}:{_appSettings.Port}");
+        Console.WriteLine("Press Ctrl+C to stop the server.");
 
-        while (true)
+        try
         {
-            var client = await listener.AcceptTcpClientAsync();
-            Console.WriteLine($"Client connected from {client.Client.RemoteEndPoint}");
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var client = await listener.AcceptTcpClientAsync(cancellationToken);
+                Console.WriteLine($"Client connected from {client.Client.RemoteEndPoint}");
 
-            _ = HandleClientAsync(client); // Fire and forget, we don't need to await this task
+                _ = HandleClientAsync(client); // Fire and forget, we don't need to await this task
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("Server stopping...");
+        }
+        finally
+        {
+            listener.Stop();
+            Console.WriteLine("Server stopped.");
         }
     }
 

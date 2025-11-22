@@ -59,8 +59,15 @@ static async Task Run(bool server, string address, int port, int bufferSize, boo
 
     if (server)
     {
+        using var cts = new CancellationTokenSource();
+        Console.CancelKeyPress += (sender, e) =>
+        {
+            e.Cancel = true; // Prevent immediate process termination
+            cts.Cancel();
+        };
+
         var serverMode = new ServerMode(appSettings);
-        await serverMode.StartServerAsync();
+        await serverMode.StartServerAsync(cts.Token);
     }
     else
     {
