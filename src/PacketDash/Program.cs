@@ -1,7 +1,9 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
-using nperf;
+using PacketDash;
+
+const string DefaultIpAddress = AppSettings.DefaultIpAddress;
 
 // Create command line options
 var serverOption = new Option<bool>(
@@ -9,7 +11,7 @@ var serverOption = new Option<bool>(
     "Start the application in server mode");
 var addressOption = new Option<string>(
     new[] { "--address", "-a" },
-    () => "0.0.0.0",
+    () => DefaultIpAddress,
     "The IP address to connect to or listen on, can be omitted in server mode");
 var portOption = new Option<int>(
     new[] { "--port", "-p" },
@@ -36,7 +38,7 @@ rootCommand.AddValidator(validate =>
 {
     var sor = validate.GetValueForOption(serverOption);
     var aor = validate.GetValueForOption(addressOption);
-    if (!sor && aor == "0.0.0.0")
+    if (!sor && aor == DefaultIpAddress)
     {
         validate.ErrorMessage = "The --address option cannot be omitted in client mode";
     }
@@ -53,12 +55,19 @@ await new CommandLineBuilder(rootCommand)
 
 static async Task Run(bool server, string address, int port, int bufferSize, bool logVerbose)
 {
-    var appSettings = new AppSettings(bufferSize, address ?? "0.0.0.0", port, logVerbose);
+    var appSettings = new AppSettings(bufferSize, address ?? DefaultIpAddress, port, logVerbose);
 
     if (server)
     {
+        using var cts = new CancellationTokenSource();
+        Console.CancelKeyPress += (sender, e) =>
+        {
+            e.Cancel = true; // Prevent immediate process termination
+            cts.Cancel();
+        };
+
         var serverMode = new ServerMode(appSettings);
-        await serverMode.StartServerAsync();
+        await serverMode.StartServerAsync(cts.Token);
     }
     else
     {
@@ -80,30 +89,8 @@ static async Task Run(bool server, string address, int port, int bufferSize, boo
             $"Small data test completed in {smallDataResult.duration} ms with {smallDataResult.dataSize} bytes sent");
 
         Console.WriteLine("\nSummary:");
-        PrintBandwidth("Large data test", largeDataResult.dataSize, largeDataResult.duration);
-        PrintBandwidth("Medium data test", mediumDataResult.dataSize, mediumDataResult.duration);
-        PrintBandwidth("Small data test", smallDataResult.dataSize, smallDataResult.duration);
+        Console.WriteLine($"Large data test: {BandwidthFormatter.Format(largeDataResult.dataSize, largeDataResult.duration)}");
+        Console.WriteLine($"Medium data test: {BandwidthFormatter.Format(mediumDataResult.dataSize, mediumDataResult.duration)}");
+        Console.WriteLine($"Small data test: {BandwidthFormatter.Format(smallDataResult.dataSize, smallDataResult.duration)}");
     }
 }
-
-static void PrintBandwidth(string label, long dataSize, long duration)
-{
-    double durationInSeconds = duration / 1000.0;
-    double dataSizeInBits = dataSize * 8.0;
-    double bandwidth = dataSizeInBits / durationInSeconds; // bps
-
-    int unitIndex = 0;
-    var units = new[] { "bps", "Kbps", "Mbps", "Gbps" };
-    var unitsBytes = new[] { "Bps", "KBps", "MBps", "GBps" };
-
-    while (bandwidth >= 1024 && unitIndex < units.Length - 1)
-    {
-        bandwidth /= 1024;
-        ++unitIndex;
-    }      
-
-    Console.WriteLine($"{label}: {bandwidth:F2} {units[unitIndex]} / {(bandwidth/8):F2} {unitsBytes[unitIndex]}");
-}
-
-public record AppSettings(int BufferSize = 1024 * 1024 * 10, string IpAddress = "0.0.0.0", int Port = 5000,
-    bool LogVerbose = false);

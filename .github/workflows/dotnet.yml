@@ -10,11 +10,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Restore
-        run: dotnet restore solution.sln
+        run: dotnet restore PacketDash.sln
       - name: Build
-        run: dotnet build solution.sln --configuration Release --no-restore
+        run: dotnet build PacketDash.sln --configuration Release --no-restore
       - name: Pack NuGet
-        run: dotnet pack src/nperf/nperf.csproj --configuration Release --output artifacts/nuget --no-build --no-restore
+        run: dotnet pack src/PacketDash/PacketDash.csproj --configuration Release --output artifacts/nuget --no-build --no-restore
       - name: Upload NuGet Artifact
         uses: actions/upload-artifact@v5
         with:

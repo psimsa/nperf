@@ -5,7 +5,9 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{AA8B450E-96F9-499B-8163-8BB17CD7A2C8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nperf", "src\nperf\nperf.csproj", "{865450A3-999B-47F7-9A06-9C2BC7909E62}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PacketDash", "src\PacketDash\PacketDash.csproj", "{865450A3-999B-47F7-9A06-9C2BC7909E62}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PacketDash.Tests", "src\PacketDash.Tests\PacketDash.Tests.csproj", "{385FE405-EE0D-4DEC-9764-F1C2D6663DBB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
