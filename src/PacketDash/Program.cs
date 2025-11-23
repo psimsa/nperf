@@ -1,29 +1,43 @@
 ﻿using System.CommandLine;
-using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
+using System.CommandLine.Invocation;
 using PacketDash;
 
 const string DefaultIpAddress = AppSettings.DefaultIpAddress;
 
 // Create command line options
-var serverOption = new Option<bool>(
-    new[] { "--server", "-s" },
-    "Start the application in server mode");
-var addressOption = new Option<string>(
-    new[] { "--address", "-a" },
-    () => DefaultIpAddress,
-    "The IP address to connect to or listen on, can be omitted in server mode");
-var portOption = new Option<int>(
-    new[] { "--port", "-p" },
-    () => 5000,
-    "The port to connect to or listen on");
-var bufferSize = new Option<int>(
-    new[] { "--buffer-size", "-b" },
-    () => 1024 * 1024 * 10,
-    "The buffer size to use for sending and receiving data");
-var logVerbose = new Option<bool>(
-       new[] { "--verbose", "-v" },
-          "Enable verbose logging");
+var serverOption = new Option<bool>("--server")
+{
+    Description = "Start the application in server mode"
+};
+serverOption.Aliases.Add("-s");
+
+var addressOption = new Option<string>("--address")
+{
+    Description = "The IP address to connect to or listen on, can be omitted in server mode",
+    DefaultValueFactory = _ => DefaultIpAddress
+};
+addressOption.Aliases.Add("-a");
+
+var portOption = new Option<int>("--port")
+{
+    Description = "The port to connect to or listen on",
+    DefaultValueFactory = _ => 5000
+};
+portOption.Aliases.Add("-p");
+
+var bufferSize = new Option<int>("--buffer-size")
+{
+    Description = "The buffer size to use for sending and receiving data",
+    DefaultValueFactory = _ => 1024 * 1024 * 10
+};
+bufferSize.Aliases.Add("-b");
+
+var logVerbose = new Option<bool>("--verbose")
+{
+    Description = "Enable verbose logging"
+};
+logVerbose.Aliases.Add("-v");
 
 var rootCommand = new RootCommand("A network bandwidth testing tool")
 {
@@ -34,24 +48,29 @@ var rootCommand = new RootCommand("A network bandwidth testing tool")
     logVerbose
 };
 
-rootCommand.AddValidator(validate =>
+rootCommand.Validators.Add(validate =>
 {
-    var sor = validate.GetValueForOption(serverOption);
-    var aor = validate.GetValueForOption(addressOption);
+    var sor = validate.GetValue(serverOption);
+    var aor = validate.GetValue(addressOption);
     if (!sor && aor == DefaultIpAddress)
     {
-        validate.ErrorMessage = "The --address option cannot be omitted in client mode";
+        validate.AddError("The --address option cannot be omitted in client mode");
     }
 });
 
 // Configure command line option handling
-rootCommand.SetHandler(Run, serverOption, addressOption, portOption, bufferSize, logVerbose);
+rootCommand.SetAction(async (ParseResult result) =>
+{
+    var server = result.GetValue(serverOption);
+    var address = result.GetValue(addressOption);
+    var port = result.GetValue(portOption);
+    var buffer = result.GetValue(bufferSize);
+    var verbose = result.GetValue(logVerbose);
+    await Run(server, address, port, buffer, verbose);
+});
 
 // Parse and execute the command line arguments
-await new CommandLineBuilder(rootCommand)
-    .UseDefaults()
-    .Build()
-    .InvokeAsync(args);
+await rootCommand.Parse(args).InvokeAsync();
 
 static async Task Run(bool server, string address, int port, int bufferSize, bool logVerbose)
 {
