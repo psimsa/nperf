@@ -16,7 +16,7 @@ jobs:
       - name: Pack NuGet
         run: dotnet pack src/PacketDash/PacketDash.csproj --configuration Release --output artifacts/nuget --no-build --no-restore
       - name: Upload NuGet Artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: nuget
           path: artifacts/nuget
